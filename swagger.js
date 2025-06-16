@@ -1,3 +1,4 @@
+// swagger.js
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const pkg = require('./package.json');

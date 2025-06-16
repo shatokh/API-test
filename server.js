@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config(); // загружаем .env
 
 const express = require('express');
