@@ -8,6 +8,7 @@ POST /api/auth/register
   "password": "123456"
 }
 ```
+
 ✅ Логин
 POST /api/auth/login
 
@@ -17,12 +18,14 @@ POST /api/auth/login
   "password": "123456"
 }
 ```
+
 → В ответе придёт token, скопируй его и используй в Authorization:
 
 ```http
 
 Authorization: Bearer <TOKEN>
 ```
+
 ✅ Просмотр текущего пользователя
 GET /api/auth/me
 

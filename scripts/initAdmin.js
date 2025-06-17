@@ -21,7 +21,7 @@ import User from '../models/User.js';
     const admin = await User.create({
       email,
       password: hash,
-      role: 'admin'
+      role: 'admin',
     });
 
     console.log('🎉 Админ создан:', admin.email);

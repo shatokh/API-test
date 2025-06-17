@@ -11,17 +11,17 @@ const options = {
     info: {
       title: 'Auth API Demo',
       version: pkg.version,
-      description: 'Документация учебного проекта авторизации'
+      description: 'Документация учебного проекта авторизации',
     },
     servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
     components: {
       securitySchemes: {
-        bearerAuth: { type: 'http', scheme: 'bearer' }
-      }
+        bearerAuth: { type: 'http', scheme: 'bearer' },
+      },
     },
-    security: [{ bearerAuth: [] }]
+    security: [{ bearerAuth: [] }],
   },
-  apis: ['./routes/auth.js']
+  apis: ['./routes/auth.js'],
 };
 
 const specs = swaggerJsdoc(options);

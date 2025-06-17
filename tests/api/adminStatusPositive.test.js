@@ -18,8 +18,15 @@ describe('PATCH /api/auth/users/:id/status (admin positive)', () => {
 
     // создаём админа вручную в БД
     const hash = await bcrypt.hash('adminpass', 10);
-    const admin = await User.create({ email: 'admin2@test.com', password: hash, role: 'admin' });
-    adminToken = jwt.sign({ userId: admin._id, role: 'admin' }, process.env.JWT_SECRET);
+    const admin = await User.create({
+      email: 'admin2@test.com',
+      password: hash,
+      role: 'admin',
+    });
+    adminToken = jwt.sign(
+      { userId: admin._id, role: 'admin' },
+      process.env.JWT_SECRET,
+    );
   });
 
   it('админ успешно меняет статус пользователя', async () => {

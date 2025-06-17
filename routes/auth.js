@@ -9,7 +9,7 @@ import roleMiddleware from '../middleware/roleMiddleware.js';
 import {
   registerValidator,
   loginValidator,
-  setStatusValidator
+  setStatusValidator,
 } from '../validators/authValidators.js';
 
 const router = express.Router();
@@ -46,7 +46,9 @@ const router = express.Router();
 router.post('/register', registerValidator, async (req, res) => {
   try {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const { email, password } = req.body;
     const hashed = await bcrypt.hash(password, 10);
@@ -54,9 +56,9 @@ router.post('/register', registerValidator, async (req, res) => {
 
     return res.status(201).json({ message: 'User created', userId: user._id });
   } catch (err) {
-     console.error('ERROR in /register:', err);
-     return res.status(500).json({ error: err.message });
-   }
+    console.error('ERROR in /register:', err);
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 /**
@@ -90,7 +92,9 @@ router.post('/register', registerValidator, async (req, res) => {
  */
 router.post('/login', loginValidator, async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
   const { email, password } = req.body;
   const user = await User.findOne({ email }).select('+password');
@@ -99,7 +103,10 @@ router.post('/login', loginValidator, async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET);
+  const token = jwt.sign(
+    { userId: user._id, role: user.role },
+    process.env.JWT_SECRET,
+  );
   res.json({ token });
 });
 
@@ -160,16 +167,22 @@ router.patch(
   setStatusValidator,
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const target = await User.findById(req.params.id);
-    if (!target) return res.status(404).json({ error: 'User not found' });
-    if (target.role !== 'user') return res.status(403).json({ error: 'Cannot change non-user' });
+    if (!target) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (target.role !== 'user') {
+      return res.status(403).json({ error: 'Cannot change non-user' });
+    }
 
     target.status = req.body.status;
     await target.save();
     res.status(204).end();
-  }
+  },
 );
 
 export default router;

@@ -28,9 +28,9 @@ app.use(
     swaggerOptions: {
       defaultModelsExpandDepth: -1,
       docExpansion: 'list',
-      displayRequestDuration: true
-    }
-  })
+      displayRequestDuration: true,
+    },
+  }),
 );
 
 // ⚙️ Конфигурация
@@ -43,15 +43,17 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 if (!JWT_SECRET) {
-  console.warn('⚠️ Внимание: JWT_SECRET не определён. Не рекомендуется запускать сервер без секрета!');
+  console.warn(
+    '⚠️ Внимание: JWT_SECRET не определён. Не рекомендуется запускать сервер без секрета!',
+  );
 }
 
 // 🧩 Debug Mongo
-mongoose.connection.on('error', err =>
-  console.error('❗ Ошибка MongoDB во время работы:', err.message)
+mongoose.connection.on('error', (err) =>
+  console.error('❗ Ошибка MongoDB во время работы:', err.message),
 );
 mongoose.connection.on('disconnected', () =>
-  console.warn('⚠️ MongoDB отключена')
+  console.warn('⚠️ MongoDB отключена'),
 );
 
 // 🧹 Завершение процесса
@@ -71,7 +73,7 @@ if (process.env.NODE_ENV !== 'test') {
         console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('❌ Ошибка подключения к MongoDB:', err.message);
       process.exit(1);
     });

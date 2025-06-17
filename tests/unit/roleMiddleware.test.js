@@ -23,6 +23,8 @@ describe('roleMiddleware', () => {
     middleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Access denied for this role' });
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Access denied for this role',
+    });
   });
 });

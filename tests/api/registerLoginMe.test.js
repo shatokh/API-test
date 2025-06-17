@@ -23,6 +23,10 @@ describe('Полный happy path: регистрация -> логин -> пр�
       .get('/api/auth/me')
       .set('Authorization', `Bearer ${token}`);
     expect(meRes.status).toBe(200);
-    expect(meRes.body).toMatchObject({ email: 'happy@example.com', role: 'user', _id: userId });
+    expect(meRes.body).toMatchObject({
+      email: 'happy@example.com',
+      role: 'user',
+      _id: userId,
+    });
   });
 });

@@ -4,8 +4,8 @@ import { describe, it, expect, vi, beforeAll } from 'vitest';
 // мокируем jsonwebtoken до импорта
 vi.mock('jsonwebtoken', () => ({
   default: {
-    verify: vi.fn()
-  }
+    verify: vi.fn(),
+  },
 }));
 
 import jwt from 'jsonwebtoken';
@@ -18,7 +18,7 @@ beforeAll(() => {
 const createRes = () => {
   const res = {};
   res.status = vi.fn(() => res);
-  res.json   = vi.fn();
+  res.json = vi.fn();
   return res;
 };
 
@@ -49,7 +49,9 @@ describe('authMiddleware', () => {
   });
 
   it('даёт 401 при некорректном токене', () => {
-    jwt.verify.mockImplementation(() => { throw new Error(); });
+    jwt.verify.mockImplementation(() => {
+      throw new Error();
+    });
 
     const req = { headers: { authorization: 'Bearer bad' } };
     const res = createRes();

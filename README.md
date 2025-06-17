@@ -55,8 +55,8 @@ docker run -p 3000:3000 --env-file .env auth-api
 
 ## 🔗 API Endpoints
 
-| Method | Endpoint               | Description                 | Auth required  |
-| ------ | ---------------------- | --------------------------- | -------------- |
+| Method | Endpoint               | Description                 | Auth required   |
+| ------ | ---------------------- | --------------------------- | --------------- |
 | POST   | `/api/auth/register`   | Register new user           | ❌              |
 | POST   | `/api/auth/login`      | Login, receive JWT          | ❌              |
 | GET    | `/api/auth/me`         | Get current user info       | ✅ (user/admin) |
