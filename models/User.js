@@ -1,5 +1,5 @@
 // models/User.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
     maxlength: 100,
-    select: false // чтобы пароль не вытягивался по умолчанию
+    select: false
   },
   role: {
     type: String,
@@ -30,4 +30,8 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+// Отключаем автоматическую установку уникальности на password,
+// т.к. она не нужна и мешает (если была добавлена раньше)
+delete userSchema.paths.password.options.unique;
+
+export default mongoose.model('User', userSchema);

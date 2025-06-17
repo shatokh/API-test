@@ -1,16 +1,16 @@
 //auth.js
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { validationResult } = require('express-validator');
-const User = require('../models/User');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
-const {
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { validationResult } from 'express-validator';
+import User from '../models/User.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import roleMiddleware from '../middleware/roleMiddleware.js';
+import {
   registerValidator,
   loginValidator,
   setStatusValidator
-} = require('../validators/authValidators');
+} from '../validators/authValidators.js';
 
 const router = express.Router();
 
@@ -44,14 +44,19 @@ const router = express.Router();
  *         description: Успешно зарегистрирован
  */
 router.post('/register', registerValidator, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { email, password } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({ email, password: hashed });
+    const { email, password } = req.body;
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await User.create({ email, password: hashed });
 
-  res.status(201).json({ message: 'User created', userId: user._id });
+    return res.status(201).json({ message: 'User created', userId: user._id });
+  } catch (err) {
+     console.error('ERROR in /register:', err);
+     return res.status(500).json({ error: err.message });
+   }
 });
 
 /**
@@ -148,7 +153,8 @@ router.get('/me', authMiddleware, async (req, res) => {
  *       404:
  *         description: Пользователь не найден
  */
-router.patch('/users/:id/status',
+router.patch(
+  '/users/:id/status',
   authMiddleware,
   roleMiddleware('admin'),
   setStatusValidator,
@@ -166,4 +172,4 @@ router.patch('/users/:id/status',
   }
 );
 
-module.exports = router;
+export default router;

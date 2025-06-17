@@ -1,6 +1,8 @@
 // swagger.js
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const pkg = require('./package.json');
 
 const options = {
@@ -11,7 +13,7 @@ const options = {
       version: pkg.version,
       description: 'Документация учебного проекта авторизации'
     },
-    servers: [{ url: 'http://localhost:' + process.env.PORT }],
+    servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
     components: {
       securitySchemes: {
         bearerAuth: { type: 'http', scheme: 'bearer' }
@@ -22,7 +24,5 @@ const options = {
   apis: ['./routes/auth.js']
 };
 
-module.exports = {
-  swaggerUi,
-  specs: swaggerJsdoc(options)
-};
+const specs = swaggerJsdoc(options);
+export { swaggerUi, specs };
