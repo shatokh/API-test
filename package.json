@@ -13,8 +13,8 @@
     "init:admin": "node scripts/initAdmin.js",
     "clean-install": "npx rimraf node_modules && npx rimraf package-lock.json && npm install",
     "lint": "eslint . --ext .js,.ts --fix",
-    "format": "prettier --write . --ext .js,.ts,.json,.md",
-    "check-format": "prettier --check . --ext .js,.ts,.json,.md",
+    "format": "prettier --write \"**/*.{js,ts,json,md}\"",
+    "check-format": "prettier --check \"**/*.{js,ts,json,md}\"",
     "sonar": "sonar-scanner"
   },
   "keywords": [],
