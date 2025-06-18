@@ -33,7 +33,7 @@ export default [
       '.env',
       '*.config.js', // eslint and vitest config files
       'tests/setup.js',
-    ]
+    ],
   },
 
   // 6. Base JS/TS rules
