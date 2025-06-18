@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "shatokh",
+        "projectKey": "shatokh_API-test"
+    }
+}
