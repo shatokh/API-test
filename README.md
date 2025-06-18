@@ -93,12 +93,13 @@ You can test the entire API interactively via Swagger UI in your browser.
 - Logger (`morgan`)
 
 ---
+
 ### 🧪 Testing
 
-- **Unit & API tests** with **Vitest**  
-- **HTTP integration** via **Supertest**  
-- **In-memory MongoDB** using **mongodb-memory-server**  
-- **Mocking & assertions** with **Chai** (and built-in Vitest matchers)  
+- **Unit & API tests** with **Vitest**
+- **HTTP integration** via **Supertest**
+- **In-memory MongoDB** using **mongodb-memory-server**
+- **Mocking & assertions** with **Chai** (and built-in Vitest matchers)
 
 ## 🧪 Sample JSON Requests
 
