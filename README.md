@@ -51,6 +51,18 @@ docker build -t auth-api .
 docker run -p 3000:3000 --env-file .env auth-api
 ```
 
+### Using Docker Compose
+
+```bash
+docker compose up app
+```
+
+Run tests in a container:
+
+```bash
+docker compose run --rm test
+```
+
 ---
 
 ## 🔗 API Endpoints

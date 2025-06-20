@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - "3000:3000"
+    command: node server.js
+  test:
+    build: .
+    env_file: .env.test
+    command: npm test
