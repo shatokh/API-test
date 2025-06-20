@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "pretest": "npm ci",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:api": "vitest run tests/api",
