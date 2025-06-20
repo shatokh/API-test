@@ -38,4 +38,4 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
-        run: npm run test:unit
+        run: docker run --rm -e NODE_ENV=test -v ${{ github.workspace }}:/app -w /app node:${{ matrix.node-version }} npm run test:unit
