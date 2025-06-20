@@ -91,7 +91,10 @@ import { openai } from '../server.js';
 
 export async function runSchemaValidator() {
   const userModel = await fs.promises.readFile('models/User.js', 'utf8');
-  const validators = await fs.promises.readFile('validators/authValidators.js', 'utf8');
+  const validators = await fs.promises.readFile(
+    'validators/authValidators.js',
+    'utf8',
+  );
 
   const prompt = `
   You are a code review agent. Compare the Mongoose schema and Express-validator rules.
@@ -112,7 +115,10 @@ export async function runSchemaValidator() {
     max_tokens: 500,
   });
 
-  console.log('SchemaValidatorAgent suggestions:\n', response.data.choices[0].text);
+  console.log(
+    'SchemaValidatorAgent suggestions:\n',
+    response.data.choices[0].text,
+  );
 }
 ```
 
@@ -140,4 +146,3 @@ npm run agent:schema-validate
 ---
 
 With these patterns and examples, you can extend and create agents to automate and improve your Auth API development. Happy coding!
-
