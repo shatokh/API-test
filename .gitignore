@@ -1,2 +1,31 @@
-node_modules/
-.env
+node_modules
+# Каталоги сборки и покрытие тестов
+coverage/
+dist/
+build/
+
+# Файлы окружения
+.env*
+!.env.example
+!.env.template
+
+# Логи
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Конфигурации редакторов/IDE
+.vscode/
+.idea/
+.sonarlint/
+
+# Временные файлы и кэш
+tmp/
+*.tmp
+*.swp
+.cache/
+
+# Файлы ОС
+.DS_Store
+Thumbs.db
