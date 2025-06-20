@@ -44,11 +44,11 @@ MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/authdemo
 node server.js
 ```
 
-### Or via Docker
+### Or via Docker Compose
 
 ```bash
-docker build -t auth-api .
-docker run -p 3000:3000 --env-file .env auth-api
+cp .env.template .env
+docker compose up --build
 ```
 
 ---
