@@ -1,0 +1,24 @@
+# lefthook.yml
+
+pre-commit:
+  # Запускаем команды параллельно для скорости
+  parallel: true
+
+  # Здесь описываем задачи: сначала ESLint, затем Prettier
+  commands:
+    eslint:
+      # Авто-фикс ошибок ESLint только по изменённым файлам
+      run: eslint --fix {staged_files}
+      # Обрабатываем только JS/TS
+      glob:
+        - "**/*.{js,ts}"
+      # После фикса автоматически добавляем изменённые файлы в коммит
+      stage_fixed: true
+
+    prettier:
+      # Форматируем только изменённые файлы
+      run: prettier --write {staged_files}
+      # Ограничиваемся JS, TS, JSON и MD
+      glob:
+        - "**/*.{js,ts,json,md}"
+      stage_fixed: true

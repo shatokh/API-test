@@ -15,7 +15,8 @@
     "lint": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write \"**/*.{js,ts,json,md}\"",
     "check-format": "prettier --check \"**/*.{js,ts,json,md}\"",
-    "sonar": "sonar-scanner"
+    "sonar": "sonar-scanner",
+    "postinstall": "lefthook install"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +46,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.5.0",
     "eslint-plugin-vitest": "^0.5.4",
+    "lefthook": "^1.11.14",
     "mongodb-memory-server": "^10.1.4",
     "prettier": "^3.5.3",
     "sonar-scanner": "^3.1.0",
