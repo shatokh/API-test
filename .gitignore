@@ -1,31 +1,58 @@
-node_modules
-# Каталоги сборки и покрытие тестов
-coverage/
-dist/
+# Зависимости
+node_modules/
+
+# Сборки и артефакты
 build/
+dist/
+
+# Отчёты покрытия тестов (Vitest Coverage)
+coverage/
+
+# Логи
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime-данные процессов
+pids/
+*.pid
+*.pid.lock
+*.seed
+
+# Кэш пакетов и инструментов
+.npm/
+.cache/
+.parcel-cache/
+.jspm_packages/
+.bower_components/
+.yarn/
+.pnp.*
+
+# Кэш ESLint и Prettier
+.eslintcache
+.prettiercache
+
+# Диагностические отчёты Node.js
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Файлы окружения
 .env*
 !.env.example
 !.env.template
 
-# Логи
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Конфигурации редакторов/IDE
+# Конфиги редакторов и IDE
 .vscode/
 .idea/
 .sonarlint/
 
-# Временные файлы и кэш
+# Временные файлы редакторов
 tmp/
 *.tmp
 *.swp
-.cache/
 
-# Файлы ОС
+# Системные файлы ОС
 .DS_Store
 Thumbs.db
