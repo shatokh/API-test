@@ -26,8 +26,8 @@ jobs:
       - name: Run API tests
         run: |
           docker run --rm \
-            --link mongo:mongo \
-            --env MONGODB_URI="mongodb://mongo:27017" \
+            --network host \
+            --env MONGODB_URI="mongodb://localhost:27017" \
             api-test:builder \
             npm run test:api
 
