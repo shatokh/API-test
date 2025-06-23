@@ -8,7 +8,7 @@ LABEL maintainer="you@example.com"
 
 WORKDIR /app
 
-# 1) Install system tools & MongoDB binary so MemoryServer uses it
+# 1) Install system tools & MongoDB so MemoryServer uses it
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -29,7 +29,7 @@ RUN apt-get update \
 # 2) Force mongodb-memory-server to use system binary
 ENV MONGOMS_SYSTEM_BINARY=/usr/bin/mongod
 
-# 3) Install JS dependencies without running postinstall scripts
+# 3) Install JS deps without postinstall scripts (skip lefthook)
 COPY package*.json ./
 RUN npm ci --ignore-scripts
 
@@ -44,16 +44,18 @@ LABEL maintainer="you@example.com"
 
 WORKDIR /app
 
-# 1) Install wget (healthcheck) and create non-root user in one layer
+# 1) Install wget and create non-root user in one layer
 RUN apk add --no-cache wget \
  && addgroup -S appgroup \
  && adduser -S appuser -G appgroup
 
 USER appuser
 
-# 2) Copy app and prod-deps, then remove write permissions for group/others
-COPY --from=builder --chown=appuser:appgroup /app ./
-RUN chmod -R go-w /app
+# 2) Copy app + prod-deps with read-only permissions for group/others
+COPY --from=builder \
+     --chown=appuser:appgroup \
+     --chmod=0440 \
+     /app ./
 
 # 3) Expose port and configure healthcheck
 EXPOSE 3000
