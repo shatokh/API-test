@@ -26,7 +26,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /root/.cache/mongodb-binaries
 
-# 2) Tell mongodb-memory-server to use system mongod
+# 2) Force mongodb-memory-server to use system binary
 ENV MONGOMS_SYSTEM_BINARY=/usr/bin/mongod
 
 # 3) Install JS dependencies without running postinstall scripts
@@ -40,22 +40,25 @@ COPY . .
 # Stage 2: Runtime (production)
 ####################################
 FROM node:18-alpine AS runtime
+LABEL maintainer="you@example.com"
+
 WORKDIR /app
 
-# 1) Install wget (for HEALTHCHECK) and create non-root user in one layer
+# 1) Install wget (healthcheck) and create non-root user in one layer
 RUN apk add --no-cache wget \
  && addgroup -S appgroup \
- && adduser  -S appuser -G appgroup
+ && adduser -S appuser -G appgroup
 
 USER appuser
 
-# 2) Copy application and prod-dependencies
+# 2) Copy app and prod-deps, then remove write permissions for group/others
 COPY --from=builder --chown=appuser:appgroup /app ./
+RUN chmod -R go-w /app
 
-# 3) Expose port & define healthcheck
+# 3) Expose port and configure healthcheck
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s \
   CMD ["wget","--quiet","--tries=1","--spider","http://localhost:3000/health"]
 
-# 4) Start the server
+# 4) Start the application
 ENTRYPOINT ["node","server.js"]
