@@ -2,40 +2,21 @@ name: Unit Tests
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ dev ]
   pull_request:
-    branches:
-      - dev
-      - master
+    branches: [ dev, master ]
 
 jobs:
-  unit-test:
+  unit-tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Build builder image
+        run: docker build --target builder -t api-test:builder .
 
       - name: Run unit tests
-        run: docker run --rm -e NODE_ENV=test -v ${{ github.workspace }}:/app -w /app node:${{ matrix.node-version }} npm run test:unit
+        run: docker run --rm api-test:builder npm run test:unit

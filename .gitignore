@@ -4,6 +4,7 @@ node_modules/
 # Сборки и артефакты
 build/
 dist/
+scripts/
 
 # Отчёты покрытия тестов (Vitest Coverage)
 coverage/

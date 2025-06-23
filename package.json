@@ -16,7 +16,9 @@
     "format": "prettier --write \"**/*.{js,ts,json,md}\"",
     "check-format": "prettier --check \"**/*.{js,ts,json,md}\"",
     "sonar": "sonar-scanner",
-    "postinstall": "lefthook install"
+    "postinstall": "lefthook install",
+    "docker:local": "bash ./scripts/docker-local.sh",
+    "docker:local:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/docker-local.ps1"
   },
   "keywords": [],
   "author": "",

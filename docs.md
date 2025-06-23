@@ -1,40 +1,27 @@
-🧪 4. Протестируй API (через Swagger или Postman)
-✅ Регистрация пользователя
-POST /api/auth/register
+# 1) Собрать образ с dev-зависимостями (builder)
+docker build --target builder -t api-test:builder .
 
-```json
-{
-  "email": "user@example.com",
-  "password": "123456"
-}
-```
+# 2) Запустить unit-тесты
+docker run --rm api-test:builder npm run test:unit
 
-✅ Логин
-POST /api/auth/login
+# 3) Запустить MongoDB
+docker run -d --name mongo -p 27017:27017 mongo:6
 
-```json
-{
-  "email": "user@example.com",
-  "password": "123456"
-}
-```
+# 4) Запустить API-тесты
+docker run --rm --link mongo:mongo --env MONGODB_URI="mongodb://mongo:27017" api-test:builder npm run test:api  
 
-→ В ответе придёт token, скопируй его и используй в Authorization:
 
-```http
+# 5) Остановить и удалить MongoDB
+docker stop mongo; docker rm mongo
 
-Authorization: Bearer <TOKEN>
-```
+# 6) Собрать production-образ (runtime)
+docker build --target runtime -t api-test:prod .
 
-✅ Просмотр текущего пользователя
-GET /api/auth/me
+# 7) Запустить production-контейнер и проверить, что он стартует корректно
+docker run --rm -p 3000:3000 --env-file .env api-test:prod
 
-✅ Смена статуса (только админ)
-POST /api/auth/set-status
-
-```json
-{
-  "userId": "<ID пользователя>",
-  "status": "inactive"
-}
-```
+# (опционально) Можно сразу проверить healthcheck:
+docker run -d --name api-test-prod-check -p 3000:3000 --env-file .env api-test:prod
+sleep 10
+docker inspect --format='{{.State.Health.Status}}' api-test-prod-check
+docker stop api-test-prod-check

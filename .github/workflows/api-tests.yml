@@ -1,41 +1,60 @@
-name: API Tests
+name: API Tests, Health Check & Security Scan
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ dev ]
   pull_request:
-    branches:
-      - dev
-      - master
+    branches: [ dev, master ]
 
 jobs:
-  api-test:
-    name: Run API Tests
+  api-tests:
+    name: Run API Tests, Healthcheck & Trivy Scan
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
+
+    services:
+      mongo:
+        image: mongo:6
+        ports: ['27017:27017']
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Build builder image
+        run: docker build --target builder -t api-test:builder .
 
       - name: Run API tests
-        run: docker run --rm -e NODE_ENV=test -v ${{ github.workspace }}:/app -w /app node:${{ matrix.node-version }} npm run test:api
+        run: |
+          docker run --rm \
+            --link mongo:mongo \
+            --env MONGODB_URI="mongodb://mongo:27017" \
+            api-test:builder \
+            npm run test:api
+
+      - name: Build production image
+        run: docker build --target runtime -t api-test:prod .
+
+      - name: Run healthcheck on production image
+        run: |
+          docker run -d --name api-test-prod -p 3000:3000 api-test:prod
+          echo "Waiting for healthcheck..."
+          for i in {1..10}; do
+            status=$(docker inspect --format='{{.State.Health.Status}}' api-test-prod)
+            echo "  → $status"
+            [ "$status" = "healthy" ] && break
+            sleep 3
+          done
+          if [ "$status" != "healthy" ]; then
+            echo "ERROR: Container failed healthcheck"
+            docker logs api-test-prod
+            exit 1
+          fi
+          docker stop api-test-prod
+
+      - name: Scan production image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: api-test:prod
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
