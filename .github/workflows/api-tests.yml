@@ -72,8 +72,14 @@ jobs:
           severity: 'HIGH,CRITICAL'
 
       - name: Run healthcheck on production image
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          docker run -d --rm --name api-test-prod -p 3000:3000 api-test:prod
+          docker run -d --rm --name api-test-prod -p 3000:3000 \
+            -e MONGO_URI="$MONGO_URI" \
+            -e JWT_SECRET="$JWT_SECRET" \
+            api-test:prod
           echo "Waiting for container to become healthy..."
           for i in {1..10}; do
             status=$(docker inspect --format='{{or .State.Health.Status "starting"}}' api-test-prod)
