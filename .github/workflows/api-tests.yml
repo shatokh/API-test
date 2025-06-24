@@ -18,43 +18,74 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Build builder image
-        run: docker build --target builder -t api-test:builder .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build builder image with cache
+        run: |
+          docker build \
+            --target builder \
+            -t api-test:builder \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            .
+      
+      - name: Move cache
+        if: always() # Этот шаг должен выполняться, даже если предыдущие упали, чтобы сохранить кэш
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Run API tests
         run: |
           docker run --rm \
             --network host \
-            --env MONGODB_URI="mongodb://localhost:27017" \
+            --env MONGODB_URI="mongodb://localhost:27017/test-db" \
             api-test:builder \
             npm run test:api
 
       - name: Build production image
-        run: docker build --target runtime -t api-test:prod .
+        run: |
+          docker build \
+            --target runtime \
+            -t api-test:prod \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            .
+
+      - name: Scan production image for vulnerabilities
+        # Закрепляем актуальную версию, например, 0.52.0 на момент написания
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: 'api-test:prod'
+          format: 'table'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
 
       - name: Run healthcheck on production image
         run: |
-          docker run -d --name api-test-prod -p 3000:3000 api-test:prod
-          echo "Waiting for healthcheck..."
+          docker run -d --rm --name api-test-prod -p 3000:3000 api-test:prod
+          echo "Waiting for container to become healthy..."
           for i in {1..10}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' api-test-prod)
-            echo "  → $status"
-            [ "$status" = "healthy" ] && break
+            status=$(docker inspect --format='{{or .State.Health.Status "starting"}}' api-test-prod)
+            echo "  → status is '$status'"
+            if [ "$status" = "healthy" ]; then
+              echo "✅ Container is healthy!"
+              docker stop api-test-prod
+              exit 0
+            fi
             sleep 3
           done
-          if [ "$status" != "healthy" ]; then
-            echo "ERROR: Container failed healthcheck"
-            docker logs api-test-prod
-            exit 1
-          fi
+          echo "❌ ERROR: Container failed healthcheck after 30 seconds."
+          docker logs api-test-prod
           docker stop api-test-prod
-
-      - name: Scan production image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: api-test:prod
-          format: table
-          exit-code: 1
-          severity: HIGH,CRITICAL
+          exit 1
