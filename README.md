@@ -101,6 +101,15 @@ You can test the entire API interactively via Swagger UI in your browser.
 - **In-memory MongoDB** using **mongodb-memory-server**
 - **Mocking & assertions** with **Chai** (and built-in Vitest matchers)
 
+Run tests in a container using **Docker Compose**:
+
+```bash
+export NODE_ENV=test
+docker compose run --rm test
+```
+
+Dependencies are installed during the image build step so each test run is fast.
+
 ## 🧪 Sample JSON Requests
 
 ### Register
