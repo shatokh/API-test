@@ -1,0 +1,40 @@
+# load-test.yml
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    - name: "ramp-up"
+      duration: 60        # 1 минута разогрева от 1 до 20 VU
+      arrivalRate: 1
+      rampTo: 20
+    - name: "steady-state"
+      duration: 120       # 2 минуты на пике (20 VU)
+      arrivalRate: 20
+    - name: "ramp-down"
+      duration: 30        # 30 секунд плавного спада до 0 VU
+      arrivalRate: 20
+      rampTo: 0
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Регистрация"
+    flow:
+      - think: 2          # пауза 2 секунды перед запросом
+      - post:
+          url: "/api/auth/register"
+          json:
+            email: "user_{{ $processIndex }}_{{ $randomInt(1,100000) }}@test.local"
+            password: "Password123!"
+      - think: 2
+
+  - name: "Логин"
+    flow:
+      - think: 2
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "user_{{ $processIndex }}_{{ $randomInt(1,100000) }}@test.local"
+            password: "Password123!"
+      - think: 2

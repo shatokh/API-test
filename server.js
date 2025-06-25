@@ -59,7 +59,7 @@ mongoose.connection.on('disconnected', () =>
 // 🧹 Завершение процесса
 process.on('SIGINT', async () => {
   await mongoose.connection.close();
-  console.log('🧼 Соединение с MongoDB закрыто по SIGINT');
+  console.warn('🧼 Соединение с MongoDB закрыто по SIGINT');
   process.exit(0);
 });
 
@@ -68,9 +68,9 @@ if (process.env.NODE_ENV !== 'test') {
   mongoose
     .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
     .then(() => {
-      console.log('✅ Подключение к MongoDB установлено');
+      console.warn('✅ Подключение к MongoDB установлено');
       app.listen(PORT, () => {
-        console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+        console.warn(`🚀 Сервер запущен на http://localhost:${PORT}`);
       });
     })
     .catch((err) => {
