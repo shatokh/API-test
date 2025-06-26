@@ -53,6 +53,9 @@ tmp/
 *.tmp
 *.swp
 
+# artillery reports
+report.json
+
 # Системные файлы ОС
 .DS_Store
 Thumbs.db
