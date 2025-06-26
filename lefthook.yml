@@ -8,7 +8,7 @@ pre-commit:
   commands:
     eslint:
       # Авто-фикс ошибок ESLint только по изменённым файлам
-      run: eslint --fix {staged_files}
+      run: npx eslint --fix {staged_files}
       # Обрабатываем только JS/TS
       glob:
         - "**/*.{js,ts}"
@@ -17,7 +17,7 @@ pre-commit:
 
     prettier:
       # Форматируем только изменённые файлы
-      run: prettier --write {staged_files}
+      run: npx prettier --write {staged_files}
       # Ограничиваемся JS, TS, JSON и MD
       glob:
         - "**/*.{js,ts,json,md}"
