@@ -19,4 +19,10 @@ services:
       - "3001:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: "admin"
+      # Автоматически включить анонимный доступ (по желанию)
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    volumes:
+      - "./grafana/provisioning:/etc/grafana/provisioning:ro"
+      - "./grafana/dashboards:/var/lib/grafana/dashboards:ro"
     restart: unless-stopped
