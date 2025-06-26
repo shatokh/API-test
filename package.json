@@ -41,6 +41,7 @@
     "@typescript-eslint/parser": "^8.34.1",
     "@vitest/coverage-v8": "^3.2.3",
     "@vitest/eslint-plugin": "^1.2.7",
+    "artillery-plugin-metrics-by-endpoint": "^1.17.0",
     "chai": "^5.2.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
