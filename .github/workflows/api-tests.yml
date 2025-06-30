@@ -1,26 +1,14 @@
 name: API Tests, Health Check & Security Scan
-name: API Tests, Health Check & Security Scan
 
 on:
   push:
     branches: [ dev ]
-    branches: [ dev ]
   pull_request:
-    branches: [ dev, master ]
     branches: [ dev, master ]
 
 jobs:
   api-tests:
-    name: Run API Tests, Healthcheck & Trivy Scan
-  api-tests:
-    name: Run API Tests, Healthcheck & Trivy Scan
     runs-on: ubuntu-latest
-
-    services:
-      mongo:
-        image: mongo:6
-        ports: ['27017:27017']
-
     services:
       mongo:
         image: mongo:6
@@ -34,12 +22,7 @@ jobs:
         run: docker build --target builder -t api-test:builder .
 
       - name: Run API tests
-        run: |
-          docker run --rm \
-            --link mongo:mongo \
-            --env MONGODB_URI="mongodb://mongo:27017" \
-            api-test:builder \
-            npm run test:api
+        run: docker run --rm --link mongo:mongo api-test:builder npm run test:api
 
       - name: Build production image
         run: docker build --target runtime -t api-test:prod .
@@ -50,7 +33,7 @@ jobs:
           echo "Waiting for healthcheck..."
           for i in {1..10}; do
             status=$(docker inspect --format='{{.State.Health.Status}}' api-test-prod)
-            echo "  → $status"
+            echo "  -> $status"
             [ "$status" = "healthy" ] && break
             sleep 3
           done

@@ -1,7 +1,39 @@
 version: '3.8'
 services:
-  test:
-    build: .
-    command: npm test
+  db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    build:
+      context: .
+      target: runtime
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  test-unit:
+    build:
+      context: .
+      target: builder
+    command: npm run test:unit
     environment:
       - NODE_ENV=test
+
+  test-api:
+    build:
+      context: .
+      target: builder
+    command: npm run test:api
+    environment:
+      - NODE_ENV=test
+    depends_on:
+      - db
+
+volumes:
+  mongo-data:
