@@ -1,39 +1,45 @@
 version: '3.8'
+
 services:
-  db:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - MONGODB_URI=${MONGODB_URI}
+    ports:
+      - "${PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - backend
+
+  mongo:
     image: mongo:6
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-
-  server:
-    build:
-      context: .
-      target: runtime
-    env_file: .env
-    ports:
-      - "3000:3000"
-    depends_on:
-      - db
-
-  test-unit:
-    build:
-      context: .
-      target: builder
-    command: npm run test:unit
-    environment:
-      - NODE_ENV=test
-
-  test-api:
-    build:
-      context: .
-      target: builder
-    command: npm run test:api
-    environment:
-      - NODE_ENV=test
-    depends_on:
-      - db
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - backend
 
 volumes:
-  mongo-data:
+  mongo_data:
+
+networks:
+  backend:
+    driver: bridge

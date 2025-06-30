@@ -2,15 +2,19 @@ name: Unit Tests
 
 on:
   push:
-    branches: [ dev ]
+    branches:
+      - dev
   pull_request:
-    branches: [ dev, master ]
+    branches:
+      - dev
+      - master
 
 jobs:
   unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Build builder image
