@@ -1,6 +1,5 @@
 config:
   target: "http://localhost:3000"
-
   phases:
     - name: "ramp-up"
       duration: 60
@@ -13,18 +12,7 @@ config:
       duration: 30
       arrivalRate: 50
       rampTo: 0
-
   plugins:
-    # Сбор метрик по эндпоинтам
-    # metrics-by-endpoint:
-    #   host: "0.0.0.0"
-    #   port: 9466
-    #   include:
-    #     - "/api/auth/register"
-    #     - "/api/auth/login"
-    #     - "/api/auth/me" npx artillery run load-test.yml--record --key a9_qge1uj69qvky5r9xr93ljl7g2o9re90y
-
-    # Публикация метрик в Pushgateway
     publish-metrics:
       - type: "prometheus"
         pushgateway: "http://host.docker.internal:9091"
@@ -32,7 +20,6 @@ config:
         tags:
           - "job=api-test"
           - "environment=local"
-
   defaults:
     headers:
       Content-Type: "application/json"
@@ -61,7 +48,6 @@ scenarios:
           headers:
             Authorization: "Bearer {{ authToken }}"
       - think: 2
-
   - name: "Негативный логин"
     flow:
       - post:
