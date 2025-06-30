@@ -1,40 +1,74 @@
-# load-test.yml
-
 config:
   target: "http://localhost:3000"
+
   phases:
     - name: "ramp-up"
-      duration: 60        # 1 минута разогрева от 1 до 20 VU
+      duration: 60
       arrivalRate: 1
-      rampTo: 20
+      rampTo: 50
     - name: "steady-state"
-      duration: 120       # 2 минуты на пике (20 VU)
-      arrivalRate: 20
+      duration: 120
+      arrivalRate: 50
     - name: "ramp-down"
-      duration: 30        # 30 секунд плавного спада до 0 VU
-      arrivalRate: 20
+      duration: 30
+      arrivalRate: 50
       rampTo: 0
+
+  plugins:
+    # Сбор метрик по эндпоинтам
+    # metrics-by-endpoint:
+    #   host: "0.0.0.0"
+    #   port: 9466
+    #   include:
+    #     - "/api/auth/register"
+    #     - "/api/auth/login"
+    #     - "/api/auth/me" npx artillery run load-test.yml--record --key a9_qge1uj69qvky5r9xr93ljl7g2o9re90y
+
+    # Публикация метрик в Pushgateway
+    publish-metrics:
+      - type: "prometheus"
+        pushgateway: "http://host.docker.internal:9091"
+        prefix: "artillery_"
+        tags:
+          - "job=api-test"
+          - "environment=local"
+
   defaults:
     headers:
       Content-Type: "application/json"
 
 scenarios:
-  - name: "Регистрация"
+  - name: "Регистрация → Логин → Профиль"
     flow:
-      - think: 2          # пауза 2 секунды перед запросом
+      - think: 2
       - post:
           url: "/api/auth/register"
           json:
-            email: "user_{{ $processIndex }}_{{ $randomInt(1,100000) }}@test.local"
+            email: "user_{{ $processIndex }}_{{ randomInt(1,100000) }}@test.local"
             password: "Password123!"
-      - think: 2
-
-  - name: "Логин"
-    flow:
-      - think: 2
+      - think: 1
       - post:
           url: "/api/auth/login"
           json:
-            email: "user_{{ $processIndex }}_{{ $randomInt(1,100000) }}@test.local"
+            email: "{{ lastRequest.json.email }}"
             password: "Password123!"
+          capture:
+            json: "$.token"
+            as: authToken
+      - think: 1
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
       - think: 2
+
+  - name: "Негативный логин"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "not_exist_{{ randomInt(1,1000) }}@test.local"
+            password: "WrongPass!"
+          expect:
+            - statusCode: 401
+      - think: 1
