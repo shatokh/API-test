@@ -1,8 +1,7 @@
-# Многоступенчатая сборка для оптимизации зависимостей и безопасности
 FROM node:18-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --production
+RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:18-alpine AS builder
 WORKDIR /app
