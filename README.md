@@ -12,6 +12,7 @@ It provides a working backend to help you practice API testing (Postman, Swagger
 - 𞴑 Test role-based access control (`admin`, `user`)
 - ⚙️ Practice using Swagger UI as interactive API documentation
 - 🟣 Learn Docker & cloud deploys with Render.com
+- 📊 Added Artillery → Prometheus → Grafana
 
 ---
 

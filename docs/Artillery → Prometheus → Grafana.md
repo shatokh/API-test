@@ -50,3 +50,4 @@ http://localhost:9090/targets
 6. **Открыть Grafana**
    http://localhost:3001 (Grafana)
    – Dashboard «Artillery + Prometheus» показывает VU, RPS, Error Rate, Latency
+   Готовые дашборды для импорта

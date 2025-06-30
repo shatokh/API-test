@@ -1,0 +1,53 @@
+name: Artillery Load Test
+
+on:
+  # Каждые 2 дня в 12:00 по Europe/Warsaw (UTC+2 → 10:00 UTC)
+  schedule:
+    - cron: '0 10 */2 * *'
+  # При создании или обновлении PR в master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run-artillery:
+    name: Run Artillery Load Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm start &      # запускаем сервер на localhost:3000
+          APP_PID=$!       # сохраняем PID для остановки
+
+      - name: Wait for HTTP service
+        run: |
+          timeout 1m bash -c '
+            until curl --silent --fail http://localhost:3000; do
+              echo "Waiting for API…"
+              sleep 5
+            done
+          '
+
+      - name: Run Artillery load test
+        env:
+          ARTILLERY_API_KEY: ${{ secrets.ARTILLERY_API_KEY }}
+        run: |
+          npx artillery run load-test.yml \
+            --record \
+            --key $ARTILLERY_API_KEY
+
+      - name: Stop application
+        if: always()
+        run: kill $APP_PID
