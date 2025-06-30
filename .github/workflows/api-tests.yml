@@ -22,7 +22,7 @@ jobs:
         run: docker build --target builder -t api-test:builder .
 
       - name: Run API tests
-        run: docker run --rm --link mongo:mongo api-test:builder npm run test:api
+        run: docker run --rm --link mongo:mongo -e NODE_ENV=test api-test:builder npm run test:api
 
       - name: Build production image
         run: docker build --target runtime -t api-test:prod .

@@ -17,4 +17,4 @@ jobs:
         run: docker build --target builder -t api-test:builder .
 
       - name: Run unit tests
-        run: docker run --rm api-test:builder npm run test:unit
+        run: docker run --rm -e NODE_ENV=test api-test:builder npm run test:unit
