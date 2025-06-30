@@ -1,12 +1,17 @@
 name: API Tests, Health Check & Security Scan
+name: API Tests, Health Check & Security Scan
 
 on:
   push:
     branches: [ dev ]
+    branches: [ dev ]
   pull_request:
+    branches: [ dev, master ]
     branches: [ dev, master ]
 
 jobs:
+  api-tests:
+    name: Run API Tests, Healthcheck & Trivy Scan
   api-tests:
     name: Run API Tests, Healthcheck & Trivy Scan
     runs-on: ubuntu-latest
@@ -16,82 +21,50 @@ jobs:
         image: mongo:6
         ports: ['27017:27017']
 
+    services:
+      mongo:
+        image: mongo:6
+        ports: ['27017:27017']
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Build builder image with cache
-        run: |
-          docker build \
-            --target builder \
-            -t api-test:builder \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            .
-      
-      - name: Move cache
-        if: always() # Этот шаг должен выполняться, даже если предыдущие упали, чтобы сохранить кэш
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Build builder image
+        run: docker build --target builder -t api-test:builder .
 
       - name: Run API tests
         run: |
           docker run --rm \
-            --network host \
-            --env MONGODB_URI="mongodb://localhost:27017/test-db" \
+            --link mongo:mongo \
+            --env MONGODB_URI="mongodb://mongo:27017" \
             api-test:builder \
             npm run test:api
 
       - name: Build production image
-        run: |
-          docker build \
-            --target runtime \
-            -t api-test:prod \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            .
-
-      - name: Scan production image for vulnerabilities
-        # Закрепляем актуальную версию, например, 0.52.0 на момент написания
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          image-ref: 'api-test:prod'
-          format: 'table'
-          exit-code: '1'
-          severity: 'HIGH,CRITICAL'
+        run: docker build --target runtime -t api-test:prod .
 
       - name: Run healthcheck on production image
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          docker run -d --rm --name api-test-prod -p 3000:3000 \
-            -e MONGO_URI="$MONGO_URI" \
-            -e JWT_SECRET="$JWT_SECRET" \
-            api-test:prod
-          echo "Waiting for container to become healthy..."
+          docker run -d --name api-test-prod -p 3000:3000 api-test:prod
+          echo "Waiting for healthcheck..."
           for i in {1..10}; do
-            status=$(docker inspect --format='{{or .State.Health.Status "starting"}}' api-test-prod)
-            echo "  → status is '$status'"
-            if [ "$status" = "healthy" ]; then
-              echo "✅ Container is healthy!"
-              docker stop api-test-prod
-              exit 0
-            fi
+            status=$(docker inspect --format='{{.State.Health.Status}}' api-test-prod)
+            echo "  → $status"
+            [ "$status" = "healthy" ] && break
             sleep 3
           done
-          echo "❌ ERROR: Container failed healthcheck after 30 seconds."
-          docker logs api-test-prod
+          if [ "$status" != "healthy" ]; then
+            echo "ERROR: Container failed healthcheck"
+            docker logs api-test-prod
+            exit 1
+          fi
           docker stop api-test-prod
-          exit 1
+
+      - name: Scan production image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: api-test:prod
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
