@@ -1,10 +1,8 @@
 name: Artillery Load Test
 
 on:
-  # Каждые 2 дня в 12:00 по Europe/Warsaw (UTC+2 → 10:00 UTC)
   schedule:
-    - cron: '0 10 */2 * *'
-  # При создании или обновлении PR в master
+    - cron: '0 10 */2 * *'    # каждые 2 дня в 12:00 Europe/Warsaw (10:00 UTC)
   pull_request:
     branches:
       - master
@@ -12,7 +10,6 @@ on:
 
 jobs:
   run-artillery:
-    name: Run Artillery Load Test
     runs-on: ubuntu-latest
 
     steps:
@@ -29,10 +26,10 @@ jobs:
 
       - name: Start application
         run: |
-          npm start &      # запускаем сервер на localhost:3000
-          APP_PID=$!       # сохраняем PID для остановки
+          npm start &
+          echo $! > server.pid
 
-      - name: Wait for HTTP service
+      - name: Wait for API to be ready
         run: |
           timeout 1m bash -c '
             until curl --silent --fail http://localhost:3000; do
@@ -41,14 +38,12 @@ jobs:
             done
           '
 
-      - name: Run Artillery load test
-        env:
-          ARTILLERY_API_KEY: ${{ secrets.ARTILLERY_API_KEY }}
-        run: |
-          npx artillery run load-test.yml \
-            --record \
-            --key $ARTILLERY_API_KEY
+      - name: Run Artillery load test (Cloud)
+        uses: artilleryio/action-cli@v1
+        with:
+          # отправка результатов напрямую в Artillery Cloud
+          command: run load-test.yml --record --key ${{ secrets.ARTILLERY_API_KEY }}
 
       - name: Stop application
         if: always()
-        run: kill $APP_PID
+        run: kill $(cat server.pid) || true
