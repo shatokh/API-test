@@ -5,23 +5,17 @@ import mongoose from 'mongoose';
 import morgan from 'morgan';
 import authRoutes from './routes/auth.js';
 import { swaggerUi, specs } from './swagger.js';
-import { metricsMiddleware, metricsEndpoint } from './metrics/index.js';
 
 const app = express();
 
-// ─── Prometheus metrics & healthcheck ───────────────────────────────────────
-app.use(metricsMiddleware);
-app.get('/metrics', metricsEndpoint);
-app.get('/health', (_req, res) => res.sendStatus(200));
-
-// ─── Основные middleware ────────────────────────────────────────────────────
+// 🌐 Middleware
 app.use(express.json());
 app.use(morgan('dev'));
 
-// ─── Роуты авторизации ───────────────────────────────────────────────────────
+// 🔐 Роуты авторизации
 app.use('/api/auth', authRoutes);
 
-// ─── Swagger документация ───────────────────────────────────────────────────
+// 📘 Swagger документация
 app.use(
   '/api-docs',
   swaggerUi.serve,
@@ -39,7 +33,12 @@ app.use(
   }),
 );
 
-// ─── Конфигурация ───────────────────────────────────────────────────────────
+// ✅ Healthcheck endpoint for Docker health checks
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// ⚙️ Конфигурация
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -54,7 +53,7 @@ if (!JWT_SECRET) {
   );
 }
 
-// ─── Debug MongoDB ──────────────────────────────────────────────────────────
+// 🧩 Debug Mongo
 mongoose.connection.on('error', (err) =>
   console.error('❗ Ошибка MongoDB во время работы:', err.message),
 );
@@ -62,14 +61,14 @@ mongoose.connection.on('disconnected', () =>
   console.warn('⚠️ MongoDB отключена'),
 );
 
-// ─── Graceful shutdown ──────────────────────────────────────────────────────
+// 🧹 Завершение процесса
 process.on('SIGINT', async () => {
   await mongoose.connection.close();
   console.log('🧼 Соединение с MongoDB закрыто по SIGINT');
   process.exit(0);
 });
 
-// ─── Подключаемся и запускаем только вне тестов ───────────────────────────────
+// 🔌 Подключаемся и запускаем только вне тестов
 if (process.env.NODE_ENV !== 'test') {
   mongoose
     .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
