@@ -104,8 +104,12 @@ You can test the entire API interactively via Swagger UI in your browser.
 Run tests in a container using **Docker Compose**:
 
 ```bash
-export NODE_ENV=test
-docker compose run --rm test
+# start the API with MongoDB
+docker compose up -d server db
+
+# run unit or API tests
+docker compose run --rm unit-tests
+docker compose run --rm api-tests
 ```
 
 Dependencies are installed during the image build step so each test run is fast.
