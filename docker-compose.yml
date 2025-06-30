@@ -1,7 +1,48 @@
 version: '3.8'
+
 services:
-  test:
-    build: .
-    command: npm test
+  db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    image: api-test:prod
+    build:
+      context: .
+      target: runtime
+    env_file: .env
     environment:
-      - NODE_ENV=test
+      MONGO_URI: mongodb://db:27017/auth-demo
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  unit-tests:
+    image: api-test:builder
+    build:
+      context: .
+      target: builder
+    command: npm run test:unit
+    environment:
+      NODE_ENV: test
+
+  api-tests:
+    image: api-test:builder
+    build:
+      context: .
+      target: builder
+    command: npm run test:api
+    environment:
+      NODE_ENV: test
+      MONGODB_URI: mongodb://db:27017/test-db
+    depends_on:
+      db:
+        condition: service_healthy
