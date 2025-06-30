@@ -22,7 +22,7 @@ config:
     #   include:
     #     - "/api/auth/register"
     #     - "/api/auth/login"
-    #     - "/api/auth/me"
+    #     - "/api/auth/me" npx artillery run load-test.yml--record --key a9_qge1uj69qvky5r9xr93ljl7g2o9re90y
 
     # Публикация метрик в Pushgateway
     publish-metrics:
