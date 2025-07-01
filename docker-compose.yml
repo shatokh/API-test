@@ -1,7 +1,7 @@
 services:
   api:
     env_file:
-      - .env
+      - .env.docker
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,11 +20,12 @@ services:
       - mongo
     networks:
       - backend
+      - monitoring
 
   mongo:
-    image: mongo:6
     env_file:
-      - .env
+      - .env.docker
+    image: mongo:6
     ports:
       - "27017:27017"
     volumes:
@@ -43,4 +44,6 @@ volumes:
 
 networks:
   backend:
+    driver: bridge
+  monitoring:
     driver: bridge

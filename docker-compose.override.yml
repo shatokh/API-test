@@ -1,7 +1,7 @@
 services:
   api:
     env_file:
-      - .env
+      - .env.docker
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,9 +11,7 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    command: sh -c "npm run dev"
-    environment:
-      - NODE_ENV=development
+    command: npm start
     depends_on:
       - mongo
     networks:
@@ -22,19 +20,17 @@ services:
 
   test:
     env_file:
-      - .env
+      - .env.docker
     build:
       context: .
       dockerfile: Dockerfile
       args:
         NODE_ENV: development
     image: myapp:test
+    command: sh -c "npm run test:unit && npm run test:api"
     depends_on:
       - api
       - mongo
-    command: sh -c "npm run test:unit && npm run test:api"
-    environment:
-      - NODE_ENV=development
     networks:
       - backend
 
