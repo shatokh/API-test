@@ -1,0 +1,45 @@
+services:
+  api:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: development
+    image: myapp:dev
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: sh -c "npm run dev"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+    networks:
+      - backend
+      - monitoring
+
+  test:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: development
+    image: myapp:test
+    depends_on:
+      - api
+      - mongo
+    command: sh -c "npm run test:unit && npm run test:api"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+  monitoring:
+    driver: bridge

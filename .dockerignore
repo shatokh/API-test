@@ -2,3 +2,6 @@ node_modules
 npm-debug.log
 .env
 scripts/
+Dockerfile*
+docker-compose*.yml
+.git

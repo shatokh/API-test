@@ -1,7 +1,13 @@
 FROM node:18-alpine AS deps
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      npm ci --omit=dev --ignore-scripts; \
+    else \
+      npm install; \
+    fi
 
 FROM node:18-alpine AS runtime
 WORKDIR /app
