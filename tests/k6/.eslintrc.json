@@ -1,0 +1,9 @@
+{
+  "env": {
+    "k6": true
+  },
+  "plugins": ["import"],
+  "rules": {
+    "import/no-unresolved": "off"
+  }
+}

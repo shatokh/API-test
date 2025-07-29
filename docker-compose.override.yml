@@ -24,13 +24,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: deps
       args:
         NODE_ENV: development
     image: myapp:test
     command: sh -c "npm run test:unit && npm run test:api"
     depends_on:
-      - api
-      - mongo
+      - mongo            # убрали зависимость от api
     networks:
       - backend
 

@@ -85,4 +85,23 @@ export default [
       'no-await-in-loop': 'off',
     },
   },
+// 9. K6 performance tests override
+{
+  files: ['tests/k6/**/*.js'],
+  languageOptions: {
+    globals: {
+      ...nodeGlobals,
+      // стандартные глобалы k6
+      __ENV: true,
+      open: true,
+      sleep: true,
+      check: true,
+      group: true,
+    },
+  },
+  rules: {
+    'import/no-unresolved': 'off',
+  },
+},
+
 ];
