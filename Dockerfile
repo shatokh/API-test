@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
 ####################################
-# Stage 1: deps (support mongodb-memory-server + tests)
+# Stage 1: builder (support mongodb-memory-server + tests)
 ####################################
-FROM node:18-bullseye-slim AS deps
+FROM node:18-bullseye-slim AS builder
 
 # Определяем окружение сборки (production или development)
 ARG NODE_ENV=production
@@ -51,9 +51,9 @@ FROM node:18-alpine AS runtime
 # Рабочая директория для запуска приложения
 WORKDIR /app
 
-# Копируем зависимости и исходники из этапа deps
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app ./
+# Копируем зависимости и исходники из этапа builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app ./
 
 # Даем непривилегированному пользователю права на запись в /app
 RUN chown -R node:node /app
