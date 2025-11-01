@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import morgan from 'morgan';
 import authRoutes from './routes/auth.js';
 import { swaggerUi, specs } from './swagger.js';
+import { logger } from './utils/logger.js';
 
 const app = express();
 
@@ -44,27 +45,27 @@ const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!MONGO_URI) {
-  console.error('❌ Ошибка: переменная MONGO_URI не определена в .env');
+  logger.error('❌ Ошибка: переменная MONGO_URI не определена в .env');
   process.exit(1);
 }
 if (!JWT_SECRET) {
-  console.warn(
+  logger.warn(
     '⚠️ Внимание: JWT_SECRET не определён. Не рекомендуется запускать сервер без секрета!',
   );
 }
 
 // 🧩 Debug Mongo
 mongoose.connection.on('error', (err) =>
-  console.error('❗ Ошибка MongoDB во время работы:', err.message),
+  logger.error('❗ Ошибка MongoDB во время работы:', err.message),
 );
 mongoose.connection.on('disconnected', () =>
-  console.warn('⚠️ MongoDB отключена'),
+  logger.warn('⚠️ MongoDB отключена'),
 );
 
 // 🧹 Завершение процесса
 process.on('SIGINT', async () => {
   await mongoose.connection.close();
-  console.log('🧼 Соединение с MongoDB закрыто по SIGINT');
+  logger.info('🧼 Соединение с MongoDB закрыто по SIGINT');
   process.exit(0);
 });
 
@@ -73,13 +74,13 @@ if (process.env.NODE_ENV !== 'test') {
   mongoose
     .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
     .then(() => {
-      console.log('✅ Подключение к MongoDB установлено');
+      logger.info('✅ Подключение к MongoDB установлено');
       app.listen(PORT, () => {
-        console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+        logger.info(`🚀 Сервер запущен на http://localhost:${PORT}`);
       });
     })
     .catch((err) => {
-      console.error('❌ Ошибка подключения к MongoDB:', err.message);
+      logger.error('❌ Ошибка подключения к MongoDB:', err.message);
       process.exit(1);
     });
 }
