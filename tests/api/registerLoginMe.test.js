@@ -2,17 +2,20 @@
 import request from 'supertest';
 import app from '../../server.js';
 import {
-  registerUser,
-  loginUser,
   authHeader,
+  createPassword,
+  loginUser,
+  registerUser,
 } from '../helpers/authTestUtils.js';
 
 describe('Полный happy path: регистрация -> логин -> профиль пользователя', () => {
   it('успешно регистрирует, логинится и получает профиль', async () => {
     // Шаг 1: регистрация
+    const password = createPassword();
+
     const regRes = await registerUser(app, {
       email: 'happy@example.com',
-      password: 'password123',
+      password,
     });
     expect(regRes.status).toBe(201);
     const userId = regRes.body.userId;
@@ -20,7 +23,7 @@ describe('Полный happy path: регистрация -> логин -> пр�
     // Шаг 2: логин
     const loginRes = await loginUser(app, {
       email: 'happy@example.com',
-      password: 'password123',
+      password,
     });
     expect(loginRes.status).toBe(200);
     const token = loginRes.body.token;

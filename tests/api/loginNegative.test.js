@@ -1,6 +1,10 @@
 // tests/api/loginNegative.test.js
 import app from '../../server.js';
-import { loginUser, registerUser } from '../helpers/authTestUtils.js';
+import {
+  createPassword,
+  loginUser,
+  registerUser,
+} from '../helpers/authTestUtils.js';
 
 describe('POST /api/auth/login (negative)', () => {
   it('400 при пустом теле', async () => {
@@ -11,20 +15,21 @@ describe('POST /api/auth/login (negative)', () => {
   it('400 при некорректном email', async () => {
     const res = await loginUser(app, {
       email: 'bad-email',
-      password: '123456',
+      password: createPassword(),
     });
     expect(res.status).toBe(400);
   });
 
   it('401 при неверном пароле', async () => {
+    const password = createPassword();
     await registerUser(app, {
       email: 'neg@example.com',
-      password: 'secure123',
+      password,
     });
 
     const res = await loginUser(app, {
       email: 'neg@example.com',
-      password: 'wrongpwd',
+      password: createPassword(),
     });
     expect(res.status).toBe(401);
   });

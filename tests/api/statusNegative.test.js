@@ -4,6 +4,7 @@ import app from '../../server.js';
 import {
   createAdminToken,
   createAdminUser,
+  createPassword,
   loginUser,
   registerUser,
 } from '../helpers/authTestUtils.js';
@@ -11,19 +12,21 @@ import {
 describe('PATCH /api/auth/users/:id/status (negative)', () => {
   let userId;
   let adminToken;
+  let userPassword;
 
   beforeEach(async () => {
     // создаём пользователя перед каждым тестом
+    userPassword = createPassword();
     const reg = await registerUser(app, {
       email: 'statusneg@example.com',
-      password: 'pass1234',
+      password: userPassword,
     });
     userId = reg.body.userId;
 
     // создаём админа перед каждым тестом
     const { token } = await createAdminToken({
       email: 'adminStatus@test.com',
-      password: 'admin123',
+      password: createPassword(),
     });
     adminToken = token;
   });
@@ -46,7 +49,7 @@ describe('PATCH /api/auth/users/:id/status (negative)', () => {
   it('403 при недостаточных правах (не админ)', async () => {
     const userLogin = await loginUser(app, {
       email: 'statusneg@example.com',
-      password: 'pass1234',
+      password: userPassword,
     });
     const userToken = userLogin.body.token;
 
@@ -84,7 +87,7 @@ describe('PATCH /api/auth/users/:id/status (negative)', () => {
   it('403 при попытке менять статус админа', async () => {
     const targetAdmin = await createAdminUser({
       email: 'target-admin@test.com',
-      password: 'admin321',
+      password: createPassword(),
     });
 
     const res = await request(app)

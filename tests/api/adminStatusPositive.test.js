@@ -2,7 +2,11 @@
 import request from 'supertest';
 import app from '../../server.js';
 import User from '../../models/User.js';
-import { createAdminToken, registerUser } from '../helpers/authTestUtils.js';
+import {
+  createAdminToken,
+  createPassword,
+  registerUser,
+} from '../helpers/authTestUtils.js';
 
 describe('PATCH /api/auth/users/:id/status (admin positive)', () => {
   let userId;
@@ -10,16 +14,17 @@ describe('PATCH /api/auth/users/:id/status (admin positive)', () => {
 
   beforeAll(async () => {
     // создаём тестового пользователя
+    const password = createPassword();
     const reg = await registerUser(app, {
       email: 'tochange@example.com',
-      password: 'pass1234',
+      password,
     });
     userId = reg.body.userId;
 
     // создаём админа вручную в БД
     const { token } = await createAdminToken({
       email: 'admin2@test.com',
-      password: 'adminpass',
+      password: createPassword(),
     });
     adminToken = token;
   });
