@@ -1,13 +1,26 @@
+# ./prometheus.yml
 global:
   scrape_interval: 5s
+  evaluation_interval: 5s
 
 scrape_configs:
+  # 1) ваши метрики из приложения
   - job_name: 'api'
     metrics_path: /metrics
     static_configs:
       - targets: ['host.docker.internal:3000']
 
-  - job_name: 'artillery'
+  # 2) (опционально) плагин metrics-by-endpoint, если вы его используете
+  #    Важно: этот HTTP-сервер плагина поднимается только во время выполнения 'artillery run'
+  #- job_name: 'metrics-by-endpoint'
+  #  metrics_path: /metrics
+  #  static_configs:
+  #    - targets: ['host.docker.internal:9466']
+    # Можно чуть пореже, но пока пусть будет 5s
+
+  # 3) Pushgateway, в котором вы будете пушить результаты через publish-metrics
+  - job_name: 'pushgateway'
     metrics_path: /metrics
+    honor_labels: true
     static_configs:
-      - targets: ['host.docker.internal:9466']
+      - targets: ['host.docker.internal:9091']

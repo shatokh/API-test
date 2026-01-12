@@ -1,0 +1,50 @@
+name: Artillery Load Test
+
+on:
+  schedule:
+    - cron: '0 10 */2 * *'
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  run-artillery:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm start &
+          echo $! > server.pid
+
+      - name: Wait for API to be ready
+        run: |
+          timeout 1m bash -c '
+            until curl --silent --fail http://localhost:3000/health; do
+              echo "Waiting for API…"
+              sleep 5
+            done
+          '
+
+      - name: Run Artillery load test (Cloud)
+        uses: artilleryio/action-cli@v1
+        with:
+          command: run load-test.yml --record --key ${{ secrets.ARTILLERY_API_KEY }}
+
+      - name: Stop application
+        if: always()
+        run: kill $(cat server.pid) || true

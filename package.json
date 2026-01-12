@@ -16,12 +16,17 @@
     "format": "prettier --write \"**/*.{js,ts,json,md}\"",
     "check-format": "prettier --check \"**/*.{js,ts,json,md}\"",
     "sonar": "sonar-scanner",
-    "postinstall": "lefthook install"
+    "postinstall": "lefthook install",
+    "docker:local": "bash ./scripts/docker-local.sh",
+    "docker:local:ps": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/docker-local.ps1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "artillery": "^2.0.23",
+    "artillery-plugin-metrics-by-endpoint": "^1.17.0",
+    "artillery-plugin-publish-metrics": "^2.28.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -41,7 +46,6 @@
     "@typescript-eslint/parser": "^8.34.1",
     "@vitest/coverage-v8": "^3.2.3",
     "@vitest/eslint-plugin": "^1.2.7",
-    "artillery-plugin-metrics-by-endpoint": "^1.17.0",
     "chai": "^5.2.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",

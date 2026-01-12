@@ -3,6 +3,7 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import { logger } from '../utils/logger.js';
 
 (async () => {
   try {
@@ -13,7 +14,7 @@ import User from '../models/User.js';
 
     const exists = await User.findOne({ email });
     if (exists) {
-      console.log('✅ Админ уже существует:', email);
+      logger.info('✅ Админ уже существует:', email);
       process.exit(0);
     }
 
@@ -24,10 +25,10 @@ import User from '../models/User.js';
       role: 'admin',
     });
 
-    console.log('🎉 Админ создан:', admin.email);
+    logger.info('🎉 Админ создан:', admin.email);
     process.exit(0);
   } catch (err) {
-    console.error('❌ Ошибка при создании админа:', err.message);
+    logger.error('❌ Ошибка при создании админа:', err.message);
     process.exit(1);
   }
 })();

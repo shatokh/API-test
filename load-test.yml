@@ -1,31 +1,25 @@
-# load-test.yml
-
 config:
   target: "http://localhost:3000"
   phases:
     - name: "ramp-up"
       duration: 60
       arrivalRate: 1
-      rampTo: 40
+      rampTo: 50
     - name: "steady-state"
       duration: 120
-      arrivalRate: 40
+      arrivalRate: 50
     - name: "ramp-down"
       duration: 30
-      arrivalRate: 40
+      arrivalRate: 50
       rampTo: 0
-
-  # Подключаем плагин и настраиваем endpoint-метрики
   plugins:
-    metrics-by-endpoint:
-      host: "0.0.0.0" 
-      port: 9466              # HTTP-порт для Prometheus scrape
-      include:
-        - "/api/auth/register"
-        - "/api/auth/login"
-        - "/api/auth/me"
-      # по умолчанию собираются: count, errors, latency (p50, p95)
-
+    publish-metrics:
+      - type: "prometheus"
+        pushgateway: "http://host.docker.internal:9091"
+        prefix: "artillery_"
+        tags:
+          - "job=api-test"
+          - "environment=local"
   defaults:
     headers:
       Content-Type: "application/json"
@@ -37,7 +31,7 @@ scenarios:
       - post:
           url: "/api/auth/register"
           json:
-            email: "user_{{ $processIndex }}_{{ $randomInt(1,100000) }}@test.local"
+            email: "user_{{ $processIndex }}_{{ randomInt(1,100000) }}@test.local"
             password: "Password123!"
       - think: 1
       - post:
@@ -46,11 +40,21 @@ scenarios:
             email: "{{ lastRequest.json.email }}"
             password: "Password123!"
           capture:
+            json: "$.token"
             as: authToken
-            json: $.token
       - think: 1
       - get:
           url: "/api/auth/me"
           headers:
             Authorization: "Bearer {{ authToken }}"
       - think: 2
+  - name: "Негативный логин"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "not_exist_{{ randomInt(1,1000) }}@test.local"
+            password: "WrongPass!"
+          expect:
+            - statusCode: 401
+      - think: 1

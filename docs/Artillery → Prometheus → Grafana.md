@@ -50,3 +50,28 @@ http://localhost:9090/targets
 6. **Открыть Grafana**
    http://localhost:3001 (Grafana)
    – Dashboard «Artillery + Prometheus» показывает VU, RPS, Error Rate, Latency
+   Готовые дашборды для импорта
+
+## Схема
+
+```mermaid
+flowchart LR
+  subgraph CI/CD
+    GH[GitHub Actions] --> DC[Docker Compose]
+  end
+
+  subgraph "Docker Compose"
+    App[API Server]
+    Art[Artillery + metrics-plugin]
+    PGW[Pushgateway]
+    PROM[Prometheus]
+    GRAF[Grafana]
+  end
+
+  App -->|HTTP| Art
+  Art -->|push metrics| PGW
+  PROM -->|scrape| PGW
+  PROM -->|data| GRAF
+
+
+```
