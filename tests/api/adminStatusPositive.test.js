@@ -1,9 +1,8 @@
 // tests/api/adminStatusPositive.test.js
 import request from 'supertest';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import app from '../../server.js';
 import User from '../../models/User.js';
+import { createAdminToken, registerUser } from '../helpers/authTestUtils.js';
 
 describe('PATCH /api/auth/users/:id/status (admin positive)', () => {
   let userId;
@@ -11,22 +10,18 @@ describe('PATCH /api/auth/users/:id/status (admin positive)', () => {
 
   beforeAll(async () => {
     // создаём тестового пользователя
-    const reg = await request(app)
-      .post('/api/auth/register')
-      .send({ email: 'tochange@example.com', password: 'pass1234' });
+    const reg = await registerUser(app, {
+      email: 'tochange@example.com',
+      password: 'pass1234',
+    });
     userId = reg.body.userId;
 
     // создаём админа вручную в БД
-    const hash = await bcrypt.hash('adminpass', 10);
-    const admin = await User.create({
+    const { token } = await createAdminToken({
       email: 'admin2@test.com',
-      password: hash,
-      role: 'admin',
+      password: 'adminpass',
     });
-    adminToken = jwt.sign(
-      { userId: admin._id, role: 'admin' },
-      process.env.JWT_SECRET,
-    );
+    adminToken = token;
   });
 
   it('админ успешно меняет статус пользователя', async () => {
