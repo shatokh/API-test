@@ -2,10 +2,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import roleMiddleware from '../middleware/roleMiddleware.js';
+import validateRequest from '../middleware/validateRequest.js';
+import { logger } from '../utils/logger.js';
 import {
   registerValidator,
   loginValidator,
@@ -43,23 +44,25 @@ const router = express.Router();
  *       201:
  *         description: Успешно зарегистрирован
  */
-router.post('/register', registerValidator, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+router.post(
+  '/register',
+  registerValidator,
+  validateRequest,
+  async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const hashed = await bcrypt.hash(password, 10);
+      const user = await User.create({ email, password: hashed });
+
+      return res
+        .status(201)
+        .json({ message: 'User created', userId: user._id });
+    } catch (err) {
+      logger.error('ERROR in /register:', err);
+      return res.status(500).json({ error: err.message });
     }
-
-    const { email, password } = req.body;
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashed });
-
-    return res.status(201).json({ message: 'User created', userId: user._id });
-  } catch (err) {
-    console.error('ERROR in /register:', err);
-    return res.status(500).json({ error: err.message });
-  }
-});
+  },
+);
 
 /**
  * @swagger
@@ -90,25 +93,25 @@ router.post('/register', registerValidator, async (req, res) => {
  *                 token:
  *                   type: string
  */
-router.post('/login', loginValidator, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+router.post(
+  '/login',
+  loginValidator,
+  validateRequest,
+  async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select('+password');
 
-  const { email, password } = req.body;
-  const user = await User.findOne({ email }).select('+password');
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
-
-  const token = jwt.sign(
-    { userId: user._id, role: user.role },
-    process.env.JWT_SECRET,
-  );
-  res.json({ token });
-});
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+    );
+    return res.json({ token });
+  },
+);
 
 /**
  * @swagger
@@ -165,12 +168,8 @@ router.patch(
   authMiddleware,
   roleMiddleware('admin'),
   setStatusValidator,
+  validateRequest,
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const target = await User.findById(req.params.id);
     if (!target) {
       return res.status(404).json({ error: 'User not found' });
