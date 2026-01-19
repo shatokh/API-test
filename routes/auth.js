@@ -93,25 +93,20 @@ router.post(
  *                 token:
  *                   type: string
  */
-router.post(
-  '/login',
-  loginValidator,
-  validateRequest,
-  async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email }).select('+password');
+router.post('/login', loginValidator, validateRequest, async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email }).select('+password');
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-    );
-    return res.json({ token });
-  },
-);
+  const token = jwt.sign(
+    { userId: user._id, role: user.role },
+    process.env.JWT_SECRET,
+  );
+  return res.json({ token });
+});
 
 /**
  * @swagger
