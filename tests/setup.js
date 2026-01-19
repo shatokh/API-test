@@ -16,7 +16,17 @@ beforeAll(async () => {
 
 beforeAll(async () => {
   // Создаём и запускаем in-memory MongoDB только один раз
-  mongoServer = await MongoMemoryServer.create();
+  const systemBinary =
+    process.env.MONGOMS_SYSTEM_BINARY ||
+    (fs.existsSync('/usr/bin/mongod') ? '/usr/bin/mongod' : null);
+  const mongoOptions = systemBinary
+    ? { binary: { systemBinary } }
+    : {
+        binary: {
+          version: process.env.MONGOMS_VERSION || '7.0.12',
+        },
+      };
+  mongoServer = await MongoMemoryServer.create(mongoOptions);
   const uri = mongoServer.getUri();
   try {
     if (mongoose.connection.readyState === 0) {
