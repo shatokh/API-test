@@ -5,12 +5,14 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pkg = require('./package.json');
 
+const API_VERSION = 'v1';
+
 const options = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'Auth API Demo',
-      version: pkg.version,
+      version: `${API_VERSION} (${pkg.version})`,
       description: 'Документация учебного проекта авторизации',
     },
     servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
@@ -20,6 +22,12 @@ const options = {
       },
     },
     security: [{ bearerAuth: [] }],
+    tags: [
+      {
+        name: 'Auth',
+        description: `Версия API: ${API_VERSION}`,
+      },
+    ],
   },
   apis: ['./routes/auth.js'],
 };
