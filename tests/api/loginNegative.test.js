@@ -1,28 +1,36 @@
 // tests/api/loginNegative.test.js
-import request from 'supertest';
 import app from '../../server.js';
+import {
+  createPassword,
+  loginUser,
+  registerUser,
+} from '../helpers/authTestUtils.js';
 
 describe('POST /api/auth/login (negative)', () => {
   it('400 при пустом теле', async () => {
-    const res = await request(app).post('/api/auth/login').send({});
+    const res = await loginUser(app, {});
     expect(res.status).toBe(400);
   });
 
   it('400 при некорректном email', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'bad-email', password: '123456' });
+    const res = await loginUser(app, {
+      email: 'bad-email',
+      password: createPassword(),
+    });
     expect(res.status).toBe(400);
   });
 
   it('401 при неверном пароле', async () => {
-    await request(app)
-      .post('/api/auth/register')
-      .send({ email: 'neg@example.com', password: 'secure123' });
+    const password = createPassword();
+    await registerUser(app, {
+      email: 'neg@example.com',
+      password,
+    });
 
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'neg@example.com', password: 'wrongpwd' });
+    const res = await loginUser(app, {
+      email: 'neg@example.com',
+      password: createPassword(),
+    });
     expect(res.status).toBe(401);
   });
 });

@@ -1,32 +1,34 @@
 // tests/api/statusNegative.test.js
 import request from 'supertest';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import app from '../../server.js';
-import User from '../../models/User.js';
+import {
+  createAdminToken,
+  createAdminUser,
+  createPassword,
+  loginUser,
+  registerUser,
+} from '../helpers/authTestUtils.js';
 
 describe('PATCH /api/auth/users/:id/status (negative)', () => {
   let userId;
   let adminToken;
+  let userPassword;
 
   beforeEach(async () => {
     // создаём пользователя перед каждым тестом
-    const reg = await request(app)
-      .post('/api/auth/register')
-      .send({ email: 'statusneg@example.com', password: 'pass1234' });
+    userPassword = createPassword();
+    const reg = await registerUser(app, {
+      email: 'statusneg@example.com',
+      password: userPassword,
+    });
     userId = reg.body.userId;
 
     // создаём админа перед каждым тестом
-    const hash = await bcrypt.hash('admin123', 10);
-    const admin = await User.create({
+    const { token } = await createAdminToken({
       email: 'adminStatus@test.com',
-      password: hash,
-      role: 'admin',
+      password: createPassword(),
     });
-    adminToken = jwt.sign(
-      { userId: admin._id, role: 'admin' },
-      process.env.JWT_SECRET,
-    );
+    adminToken = token;
   });
 
   it('401 без токена', async () => {
@@ -45,9 +47,10 @@ describe('PATCH /api/auth/users/:id/status (negative)', () => {
   });
 
   it('403 при недостаточных правах (не админ)', async () => {
-    const userLogin = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'statusneg@example.com', password: 'pass1234' });
+    const userLogin = await loginUser(app, {
+      email: 'statusneg@example.com',
+      password: userPassword,
+    });
     const userToken = userLogin.body.token;
 
     const res = await request(app)
@@ -79,5 +82,18 @@ describe('PATCH /api/auth/users/:id/status (negative)', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ status: 'unknown' });
     expect(res.status).toBe(400);
+  });
+
+  it('403 при попытке менять статус админа', async () => {
+    const targetAdmin = await createAdminUser({
+      email: 'target-admin@test.com',
+      password: createPassword(),
+    });
+
+    const res = await request(app)
+      .patch(`/api/auth/users/${targetAdmin._id}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'inactive' });
+    expect(res.status).toBe(403);
   });
 });
