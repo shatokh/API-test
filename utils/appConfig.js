@@ -1,20 +1,18 @@
 import { logger } from './logger.js';
+import { validateEnv } from './env.js';
 
 export const getAppConfig = () => {
-  const PORT = process.env.PORT || 3000;
-  const MONGO_URI = process.env.MONGO_URI;
-  const JWT_SECRET = process.env.JWT_SECRET;
+  const env = validateEnv();
 
-  if (!MONGO_URI) {
-    logger.error('❌ Ошибка: переменная MONGO_URI не определена в .env');
-    process.exit(1);
-  }
-
-  if (!JWT_SECRET) {
+  if (!env.JWT_SECRET) {
     logger.warn(
       '⚠️ Внимание: JWT_SECRET не определён. Не рекомендуется запускать сервер без секрета!',
     );
   }
 
-  return { PORT, MONGO_URI, JWT_SECRET };
+  return {
+    PORT: env.PORT,
+    MONGO_URI: env.MONGO_URI,
+    JWT_SECRET: env.JWT_SECRET,
+  };
 };
