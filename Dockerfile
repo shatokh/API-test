@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
 ####################################
-# Stage 1: builder (support mongodb-memory-server + tests)
+# Stage 1: deps (support mongodb-memory-server + tests)
 ####################################
-FROM node:18-bullseye-slim AS builder
+FROM node:18-bullseye-slim AS deps
 
 # Определяем окружение сборки (production или development)
 ARG NODE_ENV=production
@@ -40,16 +40,23 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
 # Принудительное использование системного бинаря mongod для mongodb-memory-server
 ENV MONGOMS_SYSTEM_BINARY=/usr/bin/mongod
 
-# Копируем весь проект (код и тесты)
 COPY . .
 
 ####################################
-# Stage 2: runtime (production)
+# Stage 2: builder (placeholder for future build steps)
+####################################
+FROM deps AS builder
+
+####################################
+# Stage 3: runtime (production)
 ####################################
 FROM node:18-alpine AS runtime
 
 # Рабочая директория для запуска приложения
 WORKDIR /app
+
+# Устанавливаем curl для healthcheck
+RUN apk add --no-cache curl
 
 # Копируем зависимости и исходники из этапа builder
 COPY --from=builder /app/node_modules ./node_modules
