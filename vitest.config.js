@@ -13,7 +13,12 @@ export default defineConfig({
     // Где искать тесты
     include: ['tests/**/*.{js,ts}'],
     // Исключаем артефакты и ненужные папки из процесса тестирования
-    exclude: ['tests/setup.js', 'tests/k6/**', ...configDefaults.exclude],
+    exclude: [
+      'tests/setup.js',
+      'tests/helpers/**',
+      'tests/k6/**',
+      ...configDefaults.exclude,
+    ],
 
     coverage: {
       // Собираем покрытие нативным провайдером V8
