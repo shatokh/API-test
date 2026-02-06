@@ -41,9 +41,16 @@ jobs:
           '
 
       - name: Run Artillery load test (Cloud)
+        if: ${{ secrets.ARTILLERY_API_KEY != '' }}
         uses: artilleryio/action-cli@7ac990a706d55fc5ffac41bffbbb6b9a709965b6
         with:
-          command: run load-test.yml --record --key ${{ secrets.ARTILLERY_API_KEY }}
+          command: run load-test-ci.yml --record --key ${{ secrets.ARTILLERY_API_KEY }}
+
+      - name: Run Artillery load test (Local)
+        if: ${{ secrets.ARTILLERY_API_KEY == '' }}
+        uses: artilleryio/action-cli@7ac990a706d55fc5ffac41bffbbb6b9a709965b6
+        with:
+          command: run load-test-ci.yml
 
       - name: Stop application
         if: always()
